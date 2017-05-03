@@ -1,0 +1,38 @@
+CROSS_HOST="x86_64-w64-mingw32"
+inherit cross
+
+NAME="mingw64-x86_64-unbound"
+VERSION=1.6.2
+RELEASE=1
+CATEGORY="Devel"
+SUMMARY="DNS resolver library for Win64 toolchain"
+DESCRIPTION="Unbound is a validating, recursive, and caching DNS resolver.
+Unbound is designed as a set of modular components, so that also DNSSEC
+validation and stub-resolvers (that do not run as a server, but are linked
+into an application) are easily possible."
+HOMEPAGE="http://www.unbound.net/"
+SRC_URI="http://www.unbound.net/downloads/unbound-${VERSION}.tar.gz"
+SRC_DIR="unbound-${VERSION}"
+
+DIFF_EXCLUDES="ltmain.sh"
+
+src_compile() {
+	cd ${S}
+	cygautoreconf
+	lndirs
+	cd ${B}
+	cygconf \
+		--disable-flto \
+		--without-libevent \
+		--with-libunbound-only \
+		LEX=:
+	cygmake
+}
+
+src_install() {
+	cd ${B}
+	cyginstall
+	dopkgconfig contrib/libunbound.pc
+
+	rm -f ${D}${CROSS_DATADIR}/man/man3/*
+}
